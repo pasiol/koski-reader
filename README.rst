@@ -5,7 +5,7 @@ koski-reader
     :target: https://pypi.python.org/pypi/koski-reader
     :alt: Latest PyPI version
 
-The rest clien which reading Koski database.
+The REST client fetching student's achievements from the Koski database and storing data to the MongoDB database.
 
 Usage
 -----
