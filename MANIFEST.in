@@ -1,0 +1,7 @@
+exclude .vscode
+exclude .history
+exclude .gitignore
+exclude Dockerfile
+exclude docker-compose.yml
+exclude data
+exclude db
