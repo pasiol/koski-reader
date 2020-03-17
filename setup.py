@@ -27,7 +27,7 @@ setup(
 
     packages=find_packages(exclude=('tests',)),
 
-    install_requires=[],
+    install_requires=["requests","pymongo","click"],
 
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
