@@ -6,15 +6,12 @@ RUN apt update && apt upgrade -y && \
 USER worker
 RUN mkdir /home/worker/src
 WORKDIR /home/worker/src
-RUN chown -R worker:worker /home/worker/src && \
-    mkdir data && \
-    chown -R worker:worker data && \
+RUN mkdir data && \
     mkdir log && \
-    chown -R worker:worker log
+    chown -R worker:worker /home/worker/src
 
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt && \
     rm -f requirements.txt
 
-COPY --chown=worker:worker reader.py .
-ENTRYPOINT ["python3", "reader.py"]
+COPY --chown=worker:worker koski-reader/reader.py .
