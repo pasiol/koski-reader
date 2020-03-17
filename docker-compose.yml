@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+    database:
+        image: mongo
+        volumes:
+            - mongo:/data/db
+        networks:
+            - koskireader
+    reader:
+        build: .
+        volumes:
+            - data:/home/worker/src/data
+        environment:
+            DB_SERVER: database
+        depends_on:
+            - database
+        networks:
+            - koskireader
+
+volumes:
+    data:
+    mongo:
+
+networks:
+    koskireader:
