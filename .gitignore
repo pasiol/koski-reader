@@ -30,12 +30,11 @@ nosetests.xml
 # Translations
 *.mo
 
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-
 #own
 .local
 .venv
+venv
 .history
+.vscode
+local
+data
