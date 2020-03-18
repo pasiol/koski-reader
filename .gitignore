@@ -38,3 +38,5 @@ venv
 .vscode
 local
 data
+.gitignore
+.MANIFEST.in

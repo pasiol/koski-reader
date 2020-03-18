@@ -34,7 +34,10 @@ def insert_student(student, collection, logger):
 @click.argument("input_file", type=click.Path(exists=True))
 @click.argument("ftype", type=click.STRING)
 def main(username, password, input_file, ftype):
-    types = {"studyrights": "virkailija.opintopolku.fi/koski/api/opiskeluoikeus"}
+    types = {
+        "studyrights": "virkailija.opintopolku.fi/koski/api/opiskeluoikeus",
+        "studentid": "virkailija.opintopolku.fi/koski/api/oppijanumero",
+    }
 
     logger = logging.getLogger(__name__)
     logging.basicConfig(
@@ -61,7 +64,7 @@ def main(username, password, input_file, ftype):
         logger.error(f"Reading input file failed: {input_file} {error}")
         sys.exit(1)
 
-    collection = get_collection("koski", logger)
+    collection = get_collection(ftype, logger)
     for url in urls:
         try:
             response = requests.get(
