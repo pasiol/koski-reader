@@ -9,12 +9,14 @@ from requests.auth import HTTPBasicAuth
 from pymongo import MongoClient
 
 
-def get_collection(collection, logger):
+def get_collection(collection_name, logger):
     try:
-        client = MongoClient(host=os.environ["DB_SERVER"], port=27017)
+        client = MongoClient(host=os.environ["DB_HOST"], port=27017)
         logger.info(f"Opening database connection, server info: {client.server_info()}")
-        db = client.get_database("students")
-        return db.get_collection(collection)
+        db = client.get_database("koski")
+        collection = db.get_collection(collection_name)
+        collection.delete_many({})
+        return collection
     except Exception as error:
         logger.error(f"Opening database connection failed: {collection} {error}")
         sys.exit(1)
@@ -22,10 +24,30 @@ def get_collection(collection, logger):
 
 def insert_student(student, collection, logger):
     try:
-        collection.insert_one(student)
+        result = collection.insert_one(student)
+        logger.info(f"Inserting to {collection} : {result}")
     except Exception as error:
-        logger.error(f"Inserting student to koski-collection failed: {error}")
+        logger.error(f"Inserting student to {collection}-collection failed: {error}")
         pass
+
+
+def anonymize(response, logger):
+    data = None
+    try:
+        data = dict(response.json())
+    except Exception as error:
+        logger.info(f"Casting response to JSON failed: {error}")
+        sys.exit(1)
+
+    if "henkilö" in data.keys():
+        try:
+            data["oid"] = data["henkilö"]["oid"]
+            data.pop("henkilö", None)
+            return data
+        except Exception as error:
+            logger.info(f"Anonymizing failed: {error}")
+            sys.exit(1)
+    return data
 
 
 @click.command()
@@ -36,7 +58,7 @@ def insert_student(student, collection, logger):
 def main(username, password, input_file, ftype):
     types = {
         "studyrights": "virkailija.opintopolku.fi/koski/api/opiskeluoikeus",
-        "studentid": "virkailija.opintopolku.fi/koski/api/oppijanumero",
+        "studentid": "virkailija.opintopolku.fi/koski/api/oppija",
     }
 
     logger = logging.getLogger(__name__)
@@ -56,7 +78,7 @@ def main(username, password, input_file, ftype):
 
     urls = None
     try:
-        with open(input_file, "r", encoding="utf-8") as csvfile:
+        with open(input_file, "r", encoding="utf-8-sig") as csvfile:
             reader = csv.DictReader(csvfile, fieldnames=["parameter"], delimiter=";")
             urls = [f"{endpoint}/{str(row['parameter'])}" for row in reader]
         logger.info(f"Getting {len(urls)} parameters to do.")
@@ -71,7 +93,8 @@ def main(username, password, input_file, ftype):
                 url, auth=HTTPBasicAuth(str(username), str(password))
             )
             if response.status_code == 200:
-                insert_student(response.json(), collection, logger)
+                data = anonymize(response, logger)
+                insert_student(data, collection, logger)
             else:
                 logger.error(f"Get request failed: {response.status_code} {url}")
         except Exception as error:
