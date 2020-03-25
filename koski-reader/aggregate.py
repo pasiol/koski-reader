@@ -7,11 +7,11 @@ import logging
 from pymongo import MongoClient
 
 
-def get_collection(collection_name, logger):
+def get_collection(db, collection_name, logger):
     try:
         client = MongoClient(host=os.environ["DB_HOST"], port=27017)
         logger.info(f"Opening database connection, server info: {client.server_info()}")
-        db = client.get_database("koski")
+        db = client.get_database(db)
         collection = db.get_collection(collection_name)
 
         return collection
@@ -20,7 +20,32 @@ def get_collection(collection_name, logger):
         sys.exit(1)
 
 
-def unwind_koski_studyrights(collection, logger):
+def project_primus_accomplishments(collection, logger):
+    pipeline = [
+        {
+            "$project": {
+                "_id": 0,
+                "oid": "opiskeluoikeuden tunniste",
+                "nimi": "suorituksen nimi",
+                "laajuus": "suorituksen laajuus",
+                "arvosana": "koski-arvosana",
+                "tutkinnon osan koodi": 1,
+                "koski-tunniste": 1,
+            }
+        },
+        {"$merge": {"into": {"db": "reports", "coll": "primus_accomplishments"}}},
+    ]
+
+    try:
+        collection.aggregate(pipeline)
+        logger.info(f"Executing aggregate pipeline succeed: {collection}")
+        return None
+    except Exception as error:
+        logger.error(f"Executing aggregate pipeline failed: {collection} {error}")
+        sys.exit(1)
+
+
+def unwind_koski_accomplishments(collection, logger):
 
     pipeline = [
         {
@@ -69,6 +94,10 @@ def unwind_koski_studyrights(collection, logger):
         sys.exit(1)
 
 
+def merge_accomplishments():
+    pipeline = []
+
+
 @click.command()
 @click.argument("output_path", type=click.Path(exists=True))
 def main(output_path):
@@ -79,8 +108,10 @@ def main(output_path):
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
-    koski_studyrights = get_collection("studyrights", logger)
-    unwind_koski_studyrights(koski_studyrights, logger)
+    koski_studyrights = get_collection("koski", "studyrights", logger)
+    unwind_koski_accomplishments(koski_studyrights, logger)
+    primus_accomplishments = get_collection("primus", "studyrights", logger)
+    project_primus_accomplishments(primus_accomplishments, "accomplishments", logger)
 
 
 if __name__ == "__main__":
