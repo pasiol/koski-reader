@@ -4,7 +4,8 @@ RUN apt update && apt upgrade -y && \
     apt-get install -y python3-pip && \ 
     useradd -m worker
 USER worker
-RUN mkdir /home/worker/src
+RUN mkdir /home/worker/src && \
+    mkdir /home/worker/src/output
 WORKDIR /home/worker/src
 RUN mkdir data && \
     mkdir log && \
