@@ -13,7 +13,7 @@ def get_collection(collection_name, logger):
         logger.info(f"Opening database connection, server info: {client.server_info()}")
         db = client.get_database("koski")
         collection = db.get_collection(collection_name)
-        collection.delete_many({})
+
         return collection
     except Exception as error:
         logger.error(f"Opening database connection failed: {collection} {error}")
@@ -57,12 +57,12 @@ def unwind_koski_studyrights(collection, logger):
                 "hyväksytty": "$arvosana.hyväksytty",
             }
         },
-        {"$merge": {"into": {"db": "reports", "col": "koski_accomplishments"}}},
+        {"$merge": {"into": {"db": "reports", "coll": "koski_accomplishments"}}},
     ]
 
     try:
-        result = collection.aggregate(pipeline)
-        logger.info(f"Executing aggregate pipeline succeed: {collection} {result}")
+        collection.aggregate(pipeline)
+        logger.info(f"Executing aggregate pipeline succeed: {collection}")
         return None
     except Exception as error:
         logger.error(f"Executing aggregate pipeline failed: {collection} {error}")
