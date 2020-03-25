@@ -15,7 +15,7 @@ def read(filename):
 
 setup(
     name="koski-reader",
-    version="0.2.0",
+    version="0.2.1",
     url="https://github.com/pasiol/koski-reader",
     license='GNU Lesser General Public License v3.0 or later (LGPLv3.0+)',
 
