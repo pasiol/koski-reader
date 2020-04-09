@@ -22,11 +22,12 @@ def get_collection(collection_name, logger):
 
 def insert_student(student, collection, logger):
     try:
+        print(student)
         result = collection.insert_one(student)
         logger.info(f"Inserting to {collection} : {result}")
     except Exception as error:
         logger.error(f"Inserting student to {collection}-collection failed: {error}")
-        pass
+        sys.exit(3)
 
 
 @click.command()
