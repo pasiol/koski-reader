@@ -1,7 +1,7 @@
 FROM debian:buster-slim
 ENV LC_ALL=C.UTF-8
 RUN apt update && apt upgrade -y && \
-    apt-get install -y python3-pip && \ 
+    apt-get install -y python3-pip vim && \ 
     useradd -m worker
 USER worker
 RUN mkdir /home/worker/src && \
@@ -17,4 +17,4 @@ RUN pip3 install -r requirements.txt && \
 
 COPY --chown=worker:worker koski-reader/reader.py .
 COPY --chown=worker:worker koski-reader/file_reader.py .
-COPY --chown=worker:worker koski-reader/aggregate.py .
+COPY --chown=worker:worker koski-reader/aggregate_vocational.py .

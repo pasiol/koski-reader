@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import csv
@@ -20,20 +21,31 @@ def get_collection(db, collection_name, logger):
         sys.exit(1)
 
 
-def project_primus_accomplishments(collection, logger):
+def project_primus_vocational_accomplishments(collection, logger):
+    ammatillinen_regx = re.compile("^((?!yhteinen).)*$", re.IGNORECASE)
     pipeline = [
+        {
+            "$match": {
+                "suorituksen taso": "Tutkinnon osa",
+                "kurssityypin nimi": ammatillinen_regx,
+            }
+        },
         {
             "$project": {
                 "_id": 0,
-                "oid": "opiskeluoikeuden tunniste",
-                "nimi": "suorituksen nimi",
-                "laajuus": "suorituksen laajuus",
-                "arvosana": "koski-arvosana",
+                "oid": "$opiskeluoikeuden tunniste",
+                "nimi": "$suorituksen nimi",
+                "laajuus": "$suorituksen laajuus",
+                "arvosana": "$koski-arvosana",
                 "tutkinnon osan koodi": 1,
                 "koski-tunniste": 1,
             }
         },
-        {"$merge": {"into": {"db": "reports", "coll": "primus_accomplishments"}}},
+        {
+            "$merge": {
+                "into": {"db": "reports", "coll": "primus_vocational_accomplishments"}
+            }
+        },
     ]
 
     try:
@@ -45,7 +57,7 @@ def project_primus_accomplishments(collection, logger):
         sys.exit(1)
 
 
-def unwind_koski_accomplishments(collection, logger):
+def unwind_koski_vocational_accomplishments(collection, logger):
 
     pipeline = [
         {
@@ -75,14 +87,24 @@ def unwind_koski_accomplishments(collection, logger):
                 "oid": 1,
                 "koodi": 1,
                 "nimi": 1,
-                "tutkinnonOsanRyhmä": 1,
+                "tutkinnonosanryhmä": 1,
                 "laajuus": 1,
                 "yksikkö": 1,
                 "arvosana": "$arvosana.arvosana.koodiarvo",
                 "hyväksytty": "$arvosana.hyväksytty",
             }
         },
-        {"$merge": {"into": {"db": "reports", "coll": "koski_accomplishments"}}},
+        {
+            "$match": {
+                "tutkinnonosanryhmä": "Ammatilliset tutkinnon osat",
+                "hyväksytty": True,
+            }
+        },
+        {
+            "$merge": {
+                "into": {"db": "reports", "coll": "koski_vocational_accomplishments"}
+            }
+        },
     ]
 
     try:
@@ -96,6 +118,7 @@ def unwind_koski_accomplishments(collection, logger):
 
 def merge_accomplishments():
     pipeline = []
+    pass
 
 
 @click.command()
@@ -108,10 +131,19 @@ def main(output_path):
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
+    koski_vocational = get_collection(
+        "reports", "koski_vocational_accomplishments", logger
+    )
+    koski_vocational.delete_many({})
     koski_studyrights = get_collection("koski", "studyrights", logger)
-    unwind_koski_accomplishments(koski_studyrights, logger)
-    primus_accomplishments = get_collection("primus", "studyrights", logger)
-    project_primus_accomplishments(primus_accomplishments, "accomplishments", logger)
+    unwind_koski_vocational_accomplishments(koski_studyrights, logger)
+
+    primus_vocational = get_collection(
+        "reports", "primus_vocational_accomplishments", logger
+    )
+    primus_vocational.delete_many({})
+    primus_accomplishments = get_collection("primus", "accomplishments", logger)
+    project_primus_vocational_accomplishments(primus_accomplishments, logger)
 
 
 if __name__ == "__main__":
