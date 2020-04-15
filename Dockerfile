@@ -18,3 +18,4 @@ RUN pip3 install -r requirements.txt && \
 COPY --chown=worker:worker koski-reader/reader.py .
 COPY --chown=worker:worker koski-reader/file_reader.py .
 COPY --chown=worker:worker koski-reader/aggregate_vocational.py .
+COPY --chown=worker:worker koski-reader/merge_vocational.py .
