@@ -28,6 +28,7 @@ def project_primus_vocational_accomplishments(collection, logger):
             "$match": {
                 "suorituksen taso": "Tutkinnon osa",
                 "kurssityypin nimi": ammatillinen_regx,
+                "hyväksytty": "1",
             }
         },
         {
@@ -39,6 +40,7 @@ def project_primus_vocational_accomplishments(collection, logger):
                 "arvosana": "$koski-arvosana",
                 "tutkinnon osan koodi": 1,
                 "koski-tunniste": 1,
+                "päivämäärä": 1,
             }
         },
         {
@@ -94,12 +96,12 @@ def unwind_koski_vocational_accomplishments(collection, logger):
                 "hyväksytty": "$arvosana.hyväksytty",
             }
         },
-        {
-            "$match": {
-                "tutkinnonosanryhmä": "Ammatilliset tutkinnon osat",
-                "hyväksytty": True,
-            }
-        },
+        # {
+        #    "$match": {
+        #        "tutkinnonosanryhmä": "Ammatilliset tutkinnon osat",
+        #        "hyväksytty": True,
+        #    }
+        # },
         {
             "$merge": {
                 "into": {"db": "reports", "coll": "koski_vocational_accomplishments"}
@@ -114,11 +116,6 @@ def unwind_koski_vocational_accomplishments(collection, logger):
     except Exception as error:
         logger.error(f"Executing aggregate pipeline failed: {collection} {error}")
         sys.exit(1)
-
-
-def merge_accomplishments():
-    pipeline = []
-    pass
 
 
 @click.command()
