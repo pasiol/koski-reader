@@ -86,7 +86,7 @@ def main(match_ratio, output_path):
             print(
                 f"{missing_accomplishment[1].values[0]};{missing_accomplishment[1].values[1]};"
             )
-            df = df.append(pd.DataFrame([oid, name, date], columns=columns))
+            df = df.append(pd.DataFrame([[oid, name, date]], columns=columns))
         else:
             logger.info(f"Founded almost matching name for name {name}.")
 
