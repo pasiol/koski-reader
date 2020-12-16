@@ -118,9 +118,7 @@ def unwind_koski_vocational_accomplishments(collection, logger):
         sys.exit(1)
 
 
-@click.command()
-@click.argument("output_path", type=click.Path(exists=True))
-def main(output_path):
+def main():
 
     logger = logging.getLogger(__name__)
     logging.basicConfig(
@@ -135,12 +133,12 @@ def main(output_path):
     koski_studyrights = get_collection("koski", "studyrights", logger)
     unwind_koski_vocational_accomplishments(koski_studyrights, logger)
 
-    primus_vocational = get_collection(
-        "reports", "primus_vocational_accomplishments", logger
-    )
-    primus_vocational.delete_many({})
-    primus_accomplishments = get_collection("primus", "accomplishments", logger)
-    project_primus_vocational_accomplishments(primus_accomplishments, logger)
+    # primus_vocational = get_collection(
+    #    "reports", "primus_vocational_accomplishments", logger
+    # )
+    # primus_vocational.delete_many({})
+    # primus_accomplishments = get_collection("primus", "accomplishments", logger)
+    # project_primus_vocational_accomplishments(primus_accomplishments, logger)
 
 
 if __name__ == "__main__":

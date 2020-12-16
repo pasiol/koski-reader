@@ -11,11 +11,10 @@ RUN mkdir data && \
     mkdir log && \
     chown -R worker:worker /home/worker/src
 
+COPY *.csv ./
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt && \
     rm -f requirements.txt
 
-COPY --chown=worker:worker koski-reader/reader.py .
-COPY --chown=worker:worker koski-reader/file_reader.py .
-COPY --chown=worker:worker koski-reader/aggregate_vocational.py .
-COPY --chown=worker:worker koski-reader/merge_vocational.py .
+COPY --chown=worker:worker koski-reader/*.py ./
+CMD ""

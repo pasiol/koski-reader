@@ -15,7 +15,6 @@ def get_collection(collection_name, logger):
         logger.info(f"Opening database connection, server info: {client.server_info()}")
         db = client.get_database("koski")
         collection = db.get_collection(collection_name)
-        collection.delete_many({})
         return collection
     except Exception as error:
         logger.error(f"Opening database connection failed: {collection} {error}")
@@ -23,12 +22,38 @@ def get_collection(collection_name, logger):
 
 
 def insert_student(student, collection, logger):
+    # TODO: transaction
     try:
+        result = collection.find({"_id": student["oid"]})
+        count_of_documents = len(list(result))
+        logger.info(
+            f"Trying to find oid: {student['oid']}, result length: {count_of_documents}"
+        )
+        if count_of_documents > 0:
+            try:
+                result = collection.delete_many({"_id": student["oid"]})
+                logger.info(
+                    f"Removing oid: {student['oid']}, count: {result.deleted_count}"
+                )
+            except Exception as error:
+                logger.error(f"Removing oid: {student['oid']}, failed: {error}")
+                sys.exit(1)
         result = collection.insert_one(student)
-        logger.info(f"Inserting to {collection} : {result}")
+        logger.info(f"Inserting to {collection} oid: {student['oid']}: {result}")
     except Exception as error:
         logger.error(f"Inserting student to {collection}-collection failed: {error}")
-        pass
+        sys.exit(1)
+
+
+def create_json_file(data, output_path, oid, logger):
+    try:
+        with open(
+            f"{output_path}{os.path.sep}{oid}.json", "w", encoding="utf-8"
+        ) as output_file:
+            json.dump(data, output_file, sort_keys=True, indent=4)
+    except Exception as error:
+        logger.error(f"Creating json file {oid}.json failed: {error}")
+        sys.exit(1)
 
 
 def anonymize(response, logger):
@@ -66,7 +91,7 @@ def main(username, password, input_file, ftype):
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-
+    collection = None
     endpoint = None
     try:
         endpoint = f"https://{types[ftype]}"
@@ -85,16 +110,22 @@ def main(username, password, input_file, ftype):
     except Exception as error:
         logger.error(f"Reading input file failed: {input_file} {error}")
         sys.exit(1)
-
-    collection = get_collection(ftype, logger)
+    if output_path == "":
+        collection = get_collection(ftype, logger)
     for url in urls:
+        oid = url.split("/")[-1]
+        logger.info(f"Processing id: {oid}")
         try:
             response = requests.get(
                 url, auth=HTTPBasicAuth(str(username), str(password))
             )
             if response.status_code == 200:
                 data = anonymize(response, logger)
-                insert_student(data, collection, logger)
+                data["_id"] = oid
+                if output_path == "":
+                    insert_student(data, collection, logger)
+                else:
+                    create_json_file(data, output_path, oid, logger)
             else:
                 logger.error(f"Get request failed: {response.status_code} {url}")
         except Exception as error:
