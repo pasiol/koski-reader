@@ -26,7 +26,7 @@ I prefer Canonical maintained packages which are robust.
 
 ## Usage
 
-Running the MongoDB database and docker volumes.
+Running the MongoDB database and docker volumes. Keep containers and volumes in the safe environment and do not expose them outside.
 
     docker-compose up
 
@@ -34,7 +34,7 @@ Running the MongoDB database and docker volumes.
 
     docker ps
     docker volume ls
-    docker exec -it database_1 /bin/bash
+    docker exec -it koskireader_database_1  /bin/bash
 
 ### Running commands on the reader container
 
@@ -51,13 +51,19 @@ You need input file which contains studyrights on the csv-file. It could be gene
 
     docker-compose run reader python3 reader.py user password studyrights.csv studyrights
 
+If studyright exists on the database, script replacing it with updated data.
+
+    2020-12-17 07:23:11,669 - __main__ - INFO - Processing id: N.N.NNN.NNN.NN.NNNNNNNNN
+    2020-12-17 07:23:13,095 - __main__ - INFO - Trying to find oid: N.N.NNN.NNN.NN.NNNNNNNNN, result length: 1
+    2020-12-17 07:23:13,096 - __main__ - INFO - Removing oid: N.N.NNN.NNN.NN.NNNNNNNNN, count: 1
+    2020-12-17 07:23:13,100 - __main__ - INFO - Inserting to Collection(Database(MongoClient(host=['database:27017'], document_class=dict, tz_aware=False, connect=True), 'koski'), 'studyrights') oid: N.N.NNN.NNN.NN.NNNNNNNNN: <pymongo.results.InsertOneResult object at 0x7f950b250d08>
+
 #### Attaching to database container
 
     docker exec -it koskireader_database_1 /bin/bash
     root@e9cb474b57d5:/# mongo
     > db.disableFreeMonitoring()
-
-    show dbs
+    >show dbs
     admin   0.000GB
     koski   0.NNNGB
     local   0.000GB
