@@ -17,7 +17,7 @@ def get_collection(collection_name, logger):
         collection = db.get_collection(collection_name)
         return collection
     except Exception as error:
-        logger.error(f"Opening database connection failed: {collection} {error}")
+        logger.error(f"Opening database connection failed: {collection_name} {error}")
         sys.exit(1)
 
 
@@ -45,18 +45,7 @@ def insert_student(student, collection, logger):
         sys.exit(1)
 
 
-def create_json_file(data, output_path, oid, logger):
-    try:
-        with open(
-            f"{output_path}{os.path.sep}{oid}.json", "w", encoding="utf-8"
-        ) as output_file:
-            json.dump(data, output_file, sort_keys=True, indent=4)
-    except Exception as error:
-        logger.error(f"Creating json file {oid}.json failed: {error}")
-        sys.exit(1)
-
-
-def anonymize(response, logger):
+def pseudonymize(response, logger):
     data = None
     try:
         data = dict(response.json())
@@ -70,7 +59,7 @@ def anonymize(response, logger):
             data.pop("henkilö", None)
             return data
         except Exception as error:
-            logger.info(f"Anonymizing failed: {error}")
+            logger.info(f"Pseudonymizing failed: {error}")
             sys.exit(1)
     return data
 
@@ -110,8 +99,8 @@ def main(username, password, input_file, ftype):
     except Exception as error:
         logger.error(f"Reading input file failed: {input_file} {error}")
         sys.exit(1)
-    if output_path == "":
-        collection = get_collection(ftype, logger)
+
+    collection = get_collection(ftype, logger)
     for url in urls:
         oid = url.split("/")[-1]
         logger.info(f"Processing id: {oid}")
@@ -120,12 +109,9 @@ def main(username, password, input_file, ftype):
                 url, auth=HTTPBasicAuth(str(username), str(password))
             )
             if response.status_code == 200:
-                data = anonymize(response, logger)
+                data = pseudonymize(response, logger)
                 data["_id"] = oid
-                if output_path == "":
-                    insert_student(data, collection, logger)
-                else:
-                    create_json_file(data, output_path, oid, logger)
+                insert_student(data, collection, logger)
             else:
                 logger.error(f"Get request failed: {response.status_code} {url}")
         except Exception as error:
