@@ -119,7 +119,7 @@ Attach to database container.
     docker exec -it koskireader_database_1 /bin/bash
     mongo
 
-* JSON
+JSON
 
     root@e9cb474b57d5:/# mongoexport -d reports -c koski_vocational_accomplishments --jsonArray -o ammatilliset.json
     2020-12-17T09:49:18.557+0000    connected to: mongodb://localhost/
@@ -128,7 +128,7 @@ Attach to database container.
     2020-12-17T09:49:21.282+0000    [########################]  reports.koski_vocational_accomplishments  NNNNN/NNNNN  (100.0%)
     2020-12-17T09:49:21.282+0000    exported NNNNN record
 
-* CSV 
+CSV 
 
     root@e9cb474b57d5:/# mongoexport -d reports -c koski_vocational_accomplishments --type csv -o ammatilliset.csv --fields arvosana,koodi,laajuus 
     2020-12-17T09:54:08.715+0000    connected to: mongodb://localhost/
