@@ -96,12 +96,6 @@ def unwind_koski_vocational_accomplishments(collection, logger):
                 "hyväksytty": "$arvosana.hyväksytty",
             }
         },
-        # {
-        #    "$match": {
-        #        "tutkinnonosanryhmä": "Ammatilliset tutkinnon osat",
-        #        "hyväksytty": True,
-        #    }
-        # },
         {
             "$merge": {
                 "into": {"db": "reports", "coll": "koski_vocational_accomplishments"}
@@ -132,13 +126,6 @@ def main():
     koski_vocational.delete_many({})
     koski_studyrights = get_collection("koski", "studyrights", logger)
     unwind_koski_vocational_accomplishments(koski_studyrights, logger)
-
-    # primus_vocational = get_collection(
-    #    "reports", "primus_vocational_accomplishments", logger
-    # )
-    # primus_vocational.delete_many({})
-    # primus_accomplishments = get_collection("primus", "accomplishments", logger)
-    # project_primus_vocational_accomplishments(primus_accomplishments, logger)
 
 
 if __name__ == "__main__":
