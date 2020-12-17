@@ -117,7 +117,6 @@ If you want compare the koski data to local data, you can move it for example to
 Attach to database container.
 
     docker exec -it koskireader_database_1 /bin/bash
-    mongo
 
 JSON
 
