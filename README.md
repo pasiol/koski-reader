@@ -47,7 +47,7 @@ Running the MongoDB database and docker volumes. Keep containers and volumes in 
 
 #### Running the Rest-client
 
-You need input file which contains studyrights on the csv-file. It could be generate with the primusquery utility. Put csv input file on the root directory before docker-compose build command. Reader can update old data, so there is no need get always all studyrights only the changed ones. If you remove mongodb docker volume, you also loose all the data. You can import data to host environment with mongoimport and docker cp commands.
+You need input file which contains studyrights on the csv-file. It could be generate with the primusquery utility. Put csv input file on the root directory before docker-compose build command. Reader can update old data, so there is no need get always all studyrights only the changed ones. If you remove mongodb docker volume, you also loose all the data. You can import data to host environment with mongoexport and docker cp commands.
 
     docker-compose run reader python3 reader.py user password studyrights.csv studyrights
 
@@ -95,7 +95,7 @@ If studyright exists on the database, script replacing it with updated data.
     > db.getCollectionNames()
     [ "koski_vocational_accomplishments" ]
     >db.koski_vocational_accomplishments.find().pretty()
-
+    ...
     {
         "_id" : ObjectId("5fdb21660a5337559b369c1b"),
         "arvosana" : "5",
@@ -108,4 +108,33 @@ If studyright exists on the database, script replacing it with updated data.
         "yksikkö" : "osaamispistettä"
     }
 
-    
+#### Copying data from the database container
+
+If you want compare the koski data to local data, you can move it for example to the data warehouse. Here is how it can do manually. If you want do it more automatically, write your own container which reads the mongo data and transfer it to another database.
+
+[https://docs.mongodb.com/v4.2/reference/program/mongoexport/]
+
+Attach to database container.
+
+    docker exec -it koskireader_database_1 /bin/bash
+    mongo
+
+* JSON
+
+    root@e9cb474b57d5:/# mongoexport -d reports -c koski_vocational_accomplishments --jsonArray -o ammatilliset.json
+    2020-12-17T09:49:18.557+0000    connected to: mongodb://localhost/
+    2020-12-17T09:49:19.558+0000    [####....................]  reports.koski_vocational_accomplishments  NNNNN/NNNNN  (18.2%)
+    2020-12-17T09:49:20.558+0000    [###############.........]  reports.koski_vocational_accomplishments  NNNNN/NNNNN  (63.8%)
+    2020-12-17T09:49:21.282+0000    [########################]  reports.koski_vocational_accomplishments  NNNNN/NNNNN  (100.0%)
+    2020-12-17T09:49:21.282+0000    exported NNNNN record
+
+* CSV 
+
+    root@e9cb474b57d5:/# mongoexport -d reports -c koski_vocational_accomplishments --type csv -o ammatilliset.csv --fields arvosana,koodi,laajuus 
+    2020-12-17T09:54:08.715+0000    connected to: mongodb://localhost/
+    2020-12-17T09:54:09.284+0000    exported NNNNN records
+
+Copying file from container to the host system.
+
+    docker cp koskireader_database_1:ammatilliset.json .
+    docker cp koskireader_database_1:ammatilliset.csv .
